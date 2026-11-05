@@ -4,8 +4,12 @@ from . import views
 
 
 
+
 urlpatterns = [
     path("register/", views.register, name="register"),
-    path("login/", auth_views.LoginView.as_view(template_name="portal/login.html"), name="login"),
+    path("login/", auth_views.LoginView.as_view(template_name="aura_restorant/login.html"), name="login"),
     path("logout/", auth_views.LogoutView.as_view(), name="logout"),
+    path("", views.home, name='home'),
+    path("profile/", views.ProfileView.as_view(), name='profile'),
+    path("progile/edit/", views.ProfileUpdateView.as_view(), name='profile_edit')
 ]

@@ -1,0 +1,186 @@
+{% extends "aura_restorant/base.html" %}
+
+{% block title %}Особистий кабінет — Aura Restorant{% endblock %}
+
+{% block content %}
+<div class="profile-container">
+    <div class="profile-card">
+        
+        <!-- Секція з аватаркою та основними даними -->
+        <div class="profile-header">
+            <div class="avatar-wrapper">
+                {% if account.photo %}
+                    <img src="{{ account.photo.url }}" alt="{{ account.name }}" class="profile-avatar">
+                {% else %}
+                    <!-- Заглушка, якщо фото ще не завантажено -->
+                    <div class="profile-avatar avatar-placeholder">
+                        {{ account.name|first|upper }}
+                    </div>
+                {% endif %}
+            </div>
+            
+            <h2 class="profile-title">
+                {{ account.name }} {{ account.secondname }}
+            </h2>
+            <p class="profile-username">@{{ request.user.username }}</p>
+        </div>
+
+        <hr class="divider">
+
+        <!-- Секція з деталями та описом -->
+        <div class="profile-body">
+            <div class="info-group">
+                <label>Email:</label>
+                <span>{{ request.user.email|default:"Не вказано" }}</span>
+            </div>
+
+            <div class="info-group">
+                <label>Про себе:</label>
+                <p class="description-text">
+                    {{ account.description|default:"Опис поки відсутній. Розповедіть трохи про себе!"|linebreaksbr }}
+                </p>
+            </div>
+        </div>
+
+        <!-- Кнопки дій -->
+
+        <div class="profile-actions">
+            <a href="{% url 'home' %}" class="btn btn-secondary">На головну</a>
+            <a href="{% url 'profile_edit' %}" class="btn btn-primary">Редагувати профіль</a>
+        </div>
+
+    </div>
+</div>
+
+<style>
+    .profile-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 40px 20px;
+    }
+
+    .profile-card {
+        background: #ffffff;
+        border-radius: 16px;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+        width: 100%;
+        max-width: 480px;
+        padding: 32px;
+        box-sizing: border-box;
+    }
+
+    .profile-header {
+        text-align: center;
+    }
+
+    .avatar-wrapper {
+        margin-bottom: 16px;
+        display: flex;
+        justify-content: center;
+    }
+
+    .profile-avatar {
+        width: 110px;
+        height: 110px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 3px solid #e0e0e0;
+    }
+
+    .avatar-placeholder {
+        background-color: #3b82f6;
+        color: #ffffff;
+        font-size: 42px;
+        font-weight: bold;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .profile-title {
+        margin: 0;
+        font-size: 1.5rem;
+        color: #1f2937;
+        font-weight: 600;
+    }
+
+    .profile-username {
+        margin: 4px 0 0;
+        color: #6b7280;
+        font-size: 0.95rem;
+    }
+
+    .divider {
+        border: 0;
+        height: 1px;
+        background: #e5e7eb;
+        margin: 24px 0;
+    }
+
+    .info-group {
+        margin-bottom: 16px;
+    }
+
+    .info-group label {
+        display: block;
+        font-weight: 600;
+        color: #374151;
+        font-size: 0.875rem;
+        margin-bottom: 4px;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    .info-group span {
+        color: #4b5563;
+        font-size: 1rem;
+    }
+
+    .description-text {
+        margin: 0;
+        color: #4b5563;
+        font-size: 0.95rem;
+        line-height: 1.5;
+        background: #f9fafb;
+        padding: 12px;
+        border-radius: 8px;
+        border: 1px solid #f3f4f6;
+    }
+
+    .profile-actions {
+        display: flex;
+        gap: 12px;
+        margin-top: 28px;
+        justify-content: center;
+    }
+
+    .btn {
+        display: inline-block;
+        padding: 10px 20px;
+        border-radius: 8px;
+        text-decoration: none;
+        font-weight: 500;
+        font-size: 0.9rem;
+        transition: background-color 0.2s;
+    }
+
+    .btn-secondary {
+        background-color: #f3f4f6;
+        color: #374151;
+    }
+
+    .btn-secondary:hover {
+        background-color: #e5e7eb;
+    }
+
+    .btn-primary {
+        background-color: #3b82f6;
+        color: #ffffff;
+    }
+
+    .btn-primary:hover {
+        background-color: #2563eb;
+    }
+</style>
+{% endblock %}

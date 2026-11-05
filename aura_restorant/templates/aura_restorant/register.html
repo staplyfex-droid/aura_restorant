@@ -1,0 +1,46 @@
+{% extends 'aura_restorant/base.html' %}
+
+{% block title %}Реєстрація{% endblock %}
+
+{% block content %}
+<div class="auth-card">
+    <h2>Створення акаунту</h2>
+
+    <form method="post" novalidate>
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+            <div class="alert alert-error">
+                {% for error in form.non_field_errors %}
+                    <p>{{ error }}</p>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        {% for field in form %}
+            <div class="form-group">
+                <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                {{ field }}
+                {% if field.help_text %}
+                    <small style="color: #64748b; font-size: 0.8rem; display: block; margin-top: 0.25rem;">
+                        {{ field.help_text|safe }}
+                    </small>
+                {% endif %}
+                {% if field.errors %}
+                    <ul class="errorlist">
+                        {% for error in field.errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+            </div>
+        {% endfor %}
+
+        <button type="submit" class="btn">Зареєструватися</button>
+    </form>
+
+    <div class="auth-links">
+        Вже маєте акаунт? <a href="{% url 'login' %}">Увійти</a>
+    </div>
+</div>
+{% endblock %}

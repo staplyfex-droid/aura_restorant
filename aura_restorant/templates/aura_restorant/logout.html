@@ -1,0 +1,11 @@
+{% extends 'aura_restorant/base.html' %}
+
+{% block title %}Вихід здійснено{% endblock %}
+
+{% block content %}
+<div class="auth-card" style="text-align: center;">
+    <h2>Ви успішно вийшли</h2>
+    <p style="margin-bottom: 1.5rem; color: #64748b;">Дякуємо, що завітали!</p>
+    <a href="{% url 'login' %}" class="btn">Увійти знову</a>
+</div>
+{% endblock %}

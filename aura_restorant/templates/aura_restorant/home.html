@@ -1,0 +1,109 @@
+{% extends "aura_restorant/base.html" %}
+
+{% block title %}Головна — Ресторан Aura{% endblock %}
+
+{% block content %}
+<style>
+    .home-wrapper {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 70vh;
+        padding: 2rem 1rem;
+        background-color: #f8fafc;
+    }
+
+    .home-card {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 16px;
+        padding: 2.5rem 2rem;
+        max-width: 500px;
+        width: 100%;
+        text-align: center;
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+    }
+
+    .home-title {
+        color: #1e293b;
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+
+    .home-subtitle {
+        color: #64748b;
+        font-size: 1rem;
+        margin-bottom: 2rem;
+        line-height: 1.5;
+    }
+
+    .btn-group {
+        display: flex;
+        gap: 0.75rem;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .btn-light-main {
+        display: inline-block;
+        background-color: #eab308;
+        color: #ffffff;
+        font-weight: 600;
+        padding: 0.75rem 1.5rem;
+        border-radius: 10px;
+        text-decoration: none;
+        transition: background-color 0.2s ease;
+        border: none;
+    }
+
+    .btn-light-main:hover {
+        background-color: #ca8a04;
+        color: #ffffff;
+    }
+
+    .btn-light-secondary {
+        display: inline-block;
+        background-color: #f1f5f9;
+        color: #475569;
+        font-weight: 600;
+        padding: 0.75rem 1.5rem;
+        border-radius: 10px;
+        text-decoration: none;
+        transition: all 0.2s ease;
+        border: 1px solid #cbd5e1;
+        cursor: pointer;
+    }
+
+    .btn-light-secondary:hover {
+        background-color: #e2e8f0;
+        color: #1e293b;
+    }
+</style>
+
+<div class="home-wrapper">
+    <div class="home-card">
+        <h1 class="home-title">Aura Restaurant</h1>
+        
+        {% if user.is_authenticated %}
+            <p class="home-subtitle">Вітаємо, <strong>{{ user.username }}</strong>! Раді бачити вас знову.</p>
+
+            <div class="btn-group">
+                <a href="{% url 'profile' %}" class="btn-light-main">Мій профіль</a>
+
+                <form method="post" action="{% url 'logout' %}" style="margin: 0;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn-light-secondary">Вийти</button>
+                </form>
+            </div>
+        {% else %}
+            <p class="home-subtitle">Ласкаво просимо! Увійдіть або зареєструйтеся для продовження.</p>
+
+            <div class="btn-group">
+                <a href="{% url 'login' %}" class="btn-light-main">Увійти</a>
+                <a href="{% url 'register' %}" class="btn-light-secondary">Реєстрація</a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

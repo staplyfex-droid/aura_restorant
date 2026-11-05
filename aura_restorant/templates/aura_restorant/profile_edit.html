@@ -1,0 +1,161 @@
+{% extends "aura_restorant/base.html" %}
+
+{% block title %}Редагування профілю — Aura Restorant{% endblock %}
+
+{% block content %}
+<div class="profile-container">
+    <div class="profile-card">
+        <h2 class="edit-title">Редагувати профіль</h2>
+        <p class="edit-subtitle">Змініть інформацію про себе та збережіть зміни</p>
+
+        <!-- enctype="multipart/form-data обов'язковий для завантаження фотографій -->
+        <form method="POST" enctype="multipart/form-data" class="edit-form">
+            {% csrf_token %}
+            
+            <!-- Рендеримо поля форми Accounts (name, secondname, photo, description) -->
+            {% for field in form %}
+                <div class="form-group">
+                    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {{ field }}
+                    {% if field.errors %}
+                        <div class="error-msg">{{ field.errors|striptags }}</div>
+                    {% endif %}
+                </div>
+            {% endfor %}
+
+            <!-- Кнопки дій -->
+            <div class="profile-actions">
+                <a href="{% url 'profile' %}" class="btn btn-secondary">Скасувати</a>
+                <button type="submit" class="btn btn-primary">Зберегти зміни</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+    .profile-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 40px 20px;
+    }
+
+    .profile-card {
+        background: #ffffff;
+        border-radius: 16px;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+        width: 100%;
+        max-width: 520px;
+        padding: 32px;
+        box-sizing: border-box;
+    }
+
+    .edit-title {
+        margin: 0 0 4px 0;
+        font-size: 1.5rem;
+        color: #1f2937;
+        font-weight: 600;
+        text-align: center;
+    }
+
+    .edit-subtitle {
+        margin: 0 0 24px 0;
+        color: #6b7280;
+        font-size: 0.9rem;
+        text-align: center;
+    }
+
+    .edit-form .form-group {
+        margin-bottom: 20px;
+    }
+
+    .edit-form label {
+        display: block;
+        font-weight: 600;
+        color: #374151;
+        font-size: 0.875rem;
+        margin-bottom: 6px;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    /* Стилізація стандартних інпутів Django та кастомного email інпуту */
+    .edit-form input[type="text"],
+    .edit-form input[type="email"],
+    .edit-form input[type="file"],
+    .edit-form textarea,
+    .form-control {
+        width: 100%;
+        padding: 10px 14px;
+        border: 1px solid #d1d5db;
+        border-radius: 8px;
+        font-size: 0.95rem;
+        color: #1f2937;
+        box-sizing: border-box;
+        transition: border-color 0.2s, box-shadow 0.2s;
+        background-color: #f9fafb;
+    }
+
+    .edit-form input[type="file"] {
+        padding: 8px;
+        background-color: #ffffff;
+    }
+
+    .edit-form textarea {
+        resize: vertical;
+        min-height: 100px;
+    }
+
+    .edit-form input:focus,
+    .edit-form textarea:focus,
+    .form-control:focus {
+        outline: none;
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+        background-color: #ffffff;
+    }
+
+    .error-msg {
+        color: #ef4444;
+        font-size: 0.8rem;
+        margin-top: 4px;
+    }
+
+    .profile-actions {
+        display: flex;
+        gap: 12px;
+        margin-top: 32px;
+        justify-content: flex-end;
+    }
+
+    .btn {
+        display: inline-block;
+        padding: 10px 20px;
+        border-radius: 8px;
+        text-decoration: none;
+        font-weight: 500;
+        font-size: 0.9rem;
+        cursor: pointer;
+        border: none;
+        transition: background-color 0.2s;
+    }
+
+    .btn-secondary {
+        background-color: #f3f4f6;
+        color: #374151;
+    }
+
+    .btn-secondary:hover {
+        background-color: #e5e7eb;
+    }
+
+    .btn-primary {
+        background-color: #3b82f6;
+        color: #ffffff;
+    }
+
+    .btn-primary:hover {
+        background-color: #2563eb;
+    }
+</style>
+{% endblock %}
