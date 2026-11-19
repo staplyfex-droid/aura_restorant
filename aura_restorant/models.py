@@ -21,23 +21,29 @@ class Menu(models.Model):
     price = models.DecimalField(max_digits=10, decimal_places=2)
     weight = models.PositiveIntegerField(verbose_name='вага в грамах', help_text='вкажіть вагу в грамах')
     is_available = models.BooleanField(default=True, verbose_name='в наявності')
+    ingredients = models.TextField(verbose_name='інгредієнти', help_text='вкажіть інгредієнти через кому', blank = True)
+    def ingredients_list(self):
+        return [i.strip() for i in self.ingredients.split(',') if i.strip()]
 
 class Order(models.Model):
-    user = models.ForeignKey(Accounts, on_delete=models.CASCADE, verbose_name='клієнт', related_name='user_history')
-    created_at = models.DateTimeField(auto_now_add=True, verbose_name='час замовлення')
-    address = models.CharField(max_length=255, verbose_name='адресса доставки')
-    phone = models.CharField(max_length=20, verbose_name='номер телефону')
     PAYMENT_CHOICES = [
         ('online', 'Онлайн'),
         ('cash', 'Готівка при отриманні'),
     ]
+    user = models.ForeignKey(Accounts, on_delete=models.CASCADE, verbose_name='клієнт', related_name='user_history')
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='час замовлення')
+    address = models.CharField(max_length=255, verbose_name='адресса доставки')
+    phone = models.CharField(max_length=20, verbose_name='номер телефону')
     payment_method = models.CharField(max_length=20, choices=PAYMENT_CHOICES, verbose_name='спосіб оплати')
-
+    def total(self):
+        return sum(i.subtotal() for i in self.items.all())
 class OrderItem(models.Model):
     order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='items')
     item = models.ForeignKey(Menu, on_delete=models.PROTECT,verbose_name='страва')    
     quantity = models.PositiveIntegerField(default=1, verbose_name='кількість')
     price = models.DecimalField(max_digits=10, decimal_places=2, verbose_name='ціна на момент покупки')
+    def subtotal(self):
+        return self.price * self.quantity
 
 class Review(models.Model):
     user = models.ForeignKey(Accounts, on_delete=models.CASCADE, verbose_name='користувач')

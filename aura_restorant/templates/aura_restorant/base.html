@@ -55,6 +55,7 @@
                 <a href="{% url 'login' %}">Увійти</a>
                 <a href="{% url 'register' %}">Реєстрація</a>
             {% endif %}
+            <a href="{% url 'cart' %}">Кошик ({{ cart|length }})</a>
         </nav>
     </header>
 

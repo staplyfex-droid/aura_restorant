@@ -1,0 +1,21 @@
+<h1>Дякуємо! Замовлення №{{ order.pk }} прийнято</h1>
+
+<p>Дата: {{ order.created_at|date:"d.m.Y H:i" }}</p>
+<p>Телефон: {{ order.phone }}</p>
+<p>Адреса: {{ order.address }}</p>
+<p>Оплата: {{ order.get_payment_method_display }}</p>
+
+<table>
+    <tr><th>Страва</th><th>Ціна</th><th>К-сть</th><th>Сума</th></tr>
+    {% for oi in order.items.all %}
+    <tr>
+        <td>{{ oi.item.name }}</td>
+        <td>{{ oi.price }} грн</td>
+        <td>{{ oi.quantity }}</td>
+        <td>{{ oi.subtotal }} грн</td>
+    </tr>
+    {% endfor %}
+</table>
+
+<p><strong>Разом: {{ order.total }} грн</strong></p>
+<a href="{% url 'menu' %}">До меню</a>

@@ -2,7 +2,7 @@ from django.contrib.auth.forms import UserCreationForm
 from django import forms
 from django.contrib.auth import get_user_model
 User = get_user_model()
-from .models import Accounts
+from .models import Accounts, Order
 from django.db import transaction
 
 class UserRegistrationForm(UserCreationForm):
@@ -56,5 +56,18 @@ class AccountUpdateForm(forms.ModelForm):
         if commit:
             with transaction.atomic():
                 account.user.save(update_fields=["email"])
-                account.save
+                account.save()
         return account
+
+class CartAddForm(forms.Form):
+    quantity = forms.IntegerField(min_value=1, max_value=20, initial=1)
+    override = forms.BooleanField(required=False)
+
+
+class OrderForm(forms.ModelForm):
+    class Meta:
+        model = Order
+        fields = ['phone', 'address', 'payment_method']
+        widgets = {
+            'payment_method': forms.RadioSelect,
+        }
