@@ -1,16 +1,17 @@
 from django.shortcuts import render
 from django.shortcuts import render, redirect, get_object_or_404
-from .forms import UserRegistrationForm, AccountUpdateForm, CartAddForm, OrderForm
+from .forms import UserRegistrationForm, AccountUpdateForm, CartAddForm, OrderForm, ReviewForm
 from django.contrib.auth import login
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import TemplateView, UpdateView, ListView, DetailView
-from .models import Accounts, Category, Menu, Order, OrderItem
+from .models import Accounts, Category, Menu, Order, OrderItem, Review
 from django.urls import reverse_lazy
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db import transaction
 from django.views.decorators.http import require_POST
 from .cart import Cart
+from django.db.models import Sum, F, DecimalField, Avg
 
 
 
@@ -32,17 +33,26 @@ def register(request):
 def home(request):
     return render(request, "aura_restorant/home.html")
 
+def get_account(user):
+    account, _ = Accounts.objects.get_or_create(
+        user=user,
+        defaults={'name': user.username, 'secondname': ''}
+    )
+    return account
+
 class ProfileView(LoginRequiredMixin, TemplateView):
     template_name = 'aura_restorant/profile.html'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
   
-        account, created = Accounts.objects.get_or_create(
-            user=self.request.user,
-            defaults={'name': self.request.user.username, 'secondname': ''}
-        )
+        account = get_account(self.request.user)
+        orders = account.user_history.prefetch_related('items__item').annotate(total_sum = Sum(
+            F('items__price') * F('items__quantity'),
+            output_field=DecimalField(max_digits = 12, decimal_places = 2)
+        )).order_by('-created_at')[:10]
         context['account'] = account
+        context['orders'] = orders
             
         return context
 
@@ -52,7 +62,7 @@ class ProfileUpdateView(LoginRequiredMixin, UpdateView):
     template_name = 'aura_restorant/profile_edit.html'
     success_url = reverse_lazy('home')
     def get_object(self, queryset = None):
-        return get_object_or_404(Accounts, user = self.request.user)
+        return get_account(self.request.user)
 
 
 class MenuListView(ListView):
@@ -78,7 +88,15 @@ class MenuDetailView(DetailView):
     context_object_name = 'dish'
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['reviews'] = self.object.reviews.filter(is_approwed=True).select_related('user')
+        approved = self.object.reviews.filter(is_approwed=True).select_related('user')
+        context['reviews'] = approved
+        context['avg_rate'] = approved.aggregate(avg = Avg('rate'))['avg']
+        context['form'] = ReviewForm()
+        if self.request.user.is_authenticated:
+            context['user_review'] = Review.objects.filter(
+                user__user = self.request.user,
+                item = self.object
+            ).first()
         return context
 
 def cart_detail(request):
@@ -139,3 +157,21 @@ def order_detail(request, pk):
     )
     return render(request, 'aura_restorant/order_detail.html', {'order': order})
    
+@login_required
+@require_POST
+def add_review(request, pk):
+    dish = get_object_or_404(Menu, pk=pk)
+    account = get_account(request.user)
+    if Review.objects.filter(user=account, item=dish).exists():
+        messages.error(request, "Ви вже залишили відгук на цю страву")
+        return redirect('menu_detail', pk=pk)
+    form = ReviewForm(request.POST)
+    if form.is_valid():
+        review = form.save(commit=False)
+        review.user = account
+        review.item = dish
+        review.save()
+        messages.success(request, "Ваш відгук збережено та очікує схвалення модератором")
+    else:
+        messages.error(request, "Помилка при збереженні відгуку. Перевірте правильність введених даних.")
+    return redirect('menu_detail', pk=pk)

@@ -2,7 +2,7 @@ from django.contrib.auth.forms import UserCreationForm
 from django import forms
 from django.contrib.auth import get_user_model
 User = get_user_model()
-from .models import Accounts, Order
+from .models import Accounts, Order, Review
 from django.db import transaction
 
 class UserRegistrationForm(UserCreationForm):
@@ -70,4 +70,14 @@ class OrderForm(forms.ModelForm):
         fields = ['phone', 'address', 'payment_method']
         widgets = {
             'payment_method': forms.RadioSelect,
+        }
+
+class ReviewForm(forms.ModelForm):
+    class Meta:
+        model = Review
+        fields = ['rate', 'text']
+        labels = {'rate': 'Вашва оцінка', 'text': 'Ваш відгук'}
+        widgets = {
+            'rate': forms.Select(choices=[(i, f'{i} *') for i in range(5,0,-1)]),
+            'text': forms.Textarea(attrs={'rows': 4}),
         }

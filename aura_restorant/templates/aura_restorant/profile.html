@@ -43,10 +43,61 @@
         </div>
 
         <!-- Кнопки дій -->
-
         <div class="profile-actions">
             <a href="{% url 'home' %}" class="btn btn-secondary">На головну</a>
             <a href="{% url 'profile_edit' %}" class="btn btn-primary">Редагувати профіль</a>
+        </div>
+
+        <hr class="divider">
+
+        <!-- Секція з історією замовлень -->
+        <div class="orders-section">
+            <h3 class="section-heading">Останні замовлення</h3>
+
+            {% if orders %}
+                <div class="orders-list">
+                    {% for order in orders %}
+                        <div class="order-card">
+                            <div class="order-header">
+                                <div>
+                                    <span class="order-number">Замовлення #{{ order.id }}</span>
+                                    <span class="order-date">{{ order.created_at|date:"d.m.Y о H:i" }}</span>
+                                </div>
+                                
+                                <!-- Якщо у моделі Order є поле status, можна вивести його так -->
+                                {% if order.status %}
+                                    <span class="order-status status-{{ order.status|lower }}">
+                                        {{ order.get_status_display|default:order.status }}
+                                    </span>
+                                {% endif %}
+                            </div>
+
+                            <!-- Список позицій у замовленні -->
+                            <ul class="order-items-list">
+                                {% for order_item in order.items.all %}
+                                    <li class="order-item-row">
+                                        <span class="item-name">
+                                            {{ order_item.item.name }} 
+                                            <span class="item-qty">× {{ order_item.quantity }}</span>
+                                        </span>
+                                        <span class="item-price">{{ order_item.price }} ₴</span>
+                                    </li>
+                                {% endfor %}
+                            </ul>
+
+                            <div class="order-footer">
+                                <span class="total-label">Разом до сплати:</span>
+                                <span class="total-value">{{ order.total_sum|default:"0.00" }} ₴</span>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="empty-orders">
+                    <p>Ви ще не зробили жодного замовлення.</p>
+                    <a href="{% url 'home' %}" class="btn btn-primary btn-sm">Перейти до меню</a>
+                </div>
+            {% endif %}
         </div>
 
     </div>
@@ -56,7 +107,7 @@
     .profile-container {
         display: flex;
         justify-content: center;
-        align-items: center;
+        align-items: flex-start;
         padding: 40px 20px;
     }
 
@@ -65,7 +116,7 @@
         border-radius: 16px;
         box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
         width: 100%;
-        max-width: 480px;
+        max-width: 640px;
         padding: 32px;
         box-sizing: border-box;
     }
@@ -151,7 +202,7 @@
     .profile-actions {
         display: flex;
         gap: 12px;
-        margin-top: 28px;
+        margin-top: 24px;
         justify-content: center;
     }
 
@@ -163,6 +214,12 @@
         font-weight: 500;
         font-size: 0.9rem;
         transition: background-color 0.2s;
+        text-align: center;
+    }
+
+    .btn-sm {
+        padding: 8px 16px;
+        font-size: 0.85rem;
     }
 
     .btn-secondary {
@@ -181,6 +238,118 @@
 
     .btn-primary:hover {
         background-color: #2563eb;
+    }
+
+    /* Стилі для секції замовлень */
+    .section-heading {
+        margin: 0 0 16px 0;
+        font-size: 1.2rem;
+        color: #1f2937;
+        font-weight: 600;
+    }
+
+    .orders-list {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    .order-card {
+        background: #f9fafb;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        padding: 16px;
+    }
+
+    .order-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid #e5e7eb;
+        padding-bottom: 10px;
+        margin-bottom: 12px;
+    }
+
+    .order-number {
+        font-weight: 600;
+        color: #1f2937;
+        font-size: 1rem;
+        margin-right: 8px;
+    }
+
+    .order-date {
+        color: #6b7280;
+        font-size: 0.85rem;
+    }
+
+    .order-status {
+        font-size: 0.75rem;
+        font-weight: 600;
+        padding: 4px 10px;
+        border-radius: 999px;
+        background-color: #dbeafe;
+        color: #1e40af;
+        text-transform: uppercase;
+    }
+
+    .order-items-list {
+        list-style: none;
+        padding: 0;
+        margin: 0 0 12px 0;
+    }
+
+    .order-item-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 0.9rem;
+        color: #4b5563;
+        padding: 4px 0;
+    }
+
+    .item-qty {
+        color: #6b7280;
+        font-weight: 500;
+        margin-left: 4px;
+    }
+
+    .item-price {
+        font-weight: 500;
+        color: #374151;
+    }
+
+    .order-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-top: 1px dashed #d1d5db;
+        padding-top: 10px;
+        font-size: 0.95rem;
+    }
+
+    .total-label {
+        color: #6b7280;
+        font-weight: 500;
+    }
+
+    .total-value {
+        font-weight: 700;
+        color: #111827;
+        font-size: 1.05rem;
+    }
+
+    .empty-orders {
+        text-align: center;
+        padding: 24px 16px;
+        background: #f9fafb;
+        border-radius: 12px;
+        border: 1px dashed #d1d5db;
+        color: #6b7280;
+    }
+
+    .empty-orders p {
+        margin: 0 0 12px 0;
+        font-size: 0.95rem;
     }
 </style>
 {% endblock %}

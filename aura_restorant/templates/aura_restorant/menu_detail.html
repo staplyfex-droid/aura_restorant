@@ -1,154 +1,459 @@
-<!DOCTYPE html>
-<html lang="uk">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ dish.name }} — Меню ресторану</title>
-    <!-- Підключення Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-</head>
-<body class="bg-gray-50 text-gray-800 font-sans">
+{% extends "aura_restorant/base.html" %}
 
-    <!-- Головний контейнер -->
-    <div class="max-w-4xl mx-auto px-4 py-12">
-        
-        <!-- Кнопка «Назад до меню» -->
-        <div class="mb-6">
-            <a href="{% url 'menu_list' %}" 
-               class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-lg shadow-sm hover:bg-gray-100 hover:text-gray-900 transition-colors">
-                <span>←</span>
-                <span>Назад до меню</span>
-            </a>
+{% block title %}{{ dish.name }} — Aura Restorant{% endblock %}
+
+{% block content %}
+<div class="detail-container">
+
+    <!-- Повідомлення Django (успіх / помилки відгуку або кошика) -->
+    {% if messages %}
+        <div class="messages-list">
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags|default:'info' }}">
+                    {{ message }}
+                </div>
+            {% endfor %}
         </div>
+    {% endif %}
 
-        <!-- Картка деталей страви -->
-        <div class="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden grid grid-cols-1 md:grid-cols-2 mb-10">
-            
-            <!-- Зображення страви -->
-            <div class="relative bg-gray-100 h-72 md:h-full min-h-[300px]">
-                {% if dish.photo %}
-                    <img class="w-full h-full object-cover" src="{{ dish.photo.url }}" alt="{{ dish.name }}">
-                {% else %}
-                    <div class="w-full h-full flex items-center justify-center text-gray-400 text-sm">
-                        <span>Фото відсутнє</span>
-                    </div>
-                {% endif %}
-
-                <!-- Бейдж «Немає в наявності» -->
-                {% if not dish.is_available %}
-                    <div class="absolute top-4 right-4 bg-red-600 text-white text-xs font-semibold px-3 py-1.5 rounded-full shadow">
-                        Немає в наявності
-                    </div>
-                {% endif %}
-            </div>
-
-            <!-- Інформація про страву -->
-            <div class="p-8 flex flex-col justify-between">
-                <div>
-                    <!-- Категорія -->
-                    {% if dish.category %}
-                        <span class="text-xs font-semibold text-blue-600 uppercase tracking-wider">
-                            {{ dish.category.name }}
-                        </span>
-                    {% endif %}
-
-                    <!-- Назва -->
-                    <h1 class="text-3xl font-extrabold text-gray-900 mt-2">{{ dish.name }}</h1>
-
-                    <!-- Ціна та вага -->
-                    <div class="flex items-baseline space-x-3 mt-4">
-                        <span class="text-2xl font-bold text-gray-900">{{ dish.price }} грн</span>
-                        {% if dish.weight %}
-                            <span class="text-sm text-gray-500 font-medium">/ {{ dish.weight }} г</span>
-                        {% endif %}
-                    </div>
-
-                    <!-- Опис -->
-                    <div class="mt-6">
-                        <h3 class="text-sm font-semibold text-gray-900 uppercase tracking-wide">Опис</h3>
-                        <p class="text-gray-600 text-sm mt-2 leading-relaxed">{{ dish.description }}</p>
-                    </div>
-
-                    <!-- Інгредієнти (через ваш метод ingredients_list) -->
-                    {% if dish.ingredients %}
-                        <div class="mt-6">
-                            <h3 class="text-sm font-semibold text-gray-900 uppercase tracking-wide">Склад</h3>
-                            <div class="flex flex-wrap gap-2 mt-2">
-                                {% for ingredient in dish.ingredients_list %}
-                                    <span class="bg-gray-100 text-gray-700 text-xs font-medium px-2.5 py-1 rounded-md">
-                                        {{ ingredient }}
-                                    </span>
-                                {% endfor %}
-                            </div>
-                        </div>
-                    {% endif %}
-                </div>
-
-                <!-- Кнопка дії -->
-                <div class="mt-8 pt-6 border-t border-gray-100">
-                    {% if dish.is_available %}
-                        <form action="{% url 'cart_add' dish.pk %}" method="post" class="flex items-center gap-3">
-                            {% csrf_token %}
-                            <input type="number" 
-                                   name="quantity" 
-                                   value="1" 
-                                   min="1" 
-                                   max="50" 
-                                   class="w-20 px-3 py-2.5 text-center text-sm font-semibold text-gray-900 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                            <input type="hidden" name="override" value="False">
-                            <input type="hidden" name="next" value="{{ request.path }}">
-                            <button type="submit" 
-                                    class="flex-1 px-5 py-2.5 text-sm font-semibold text-white bg-blue-600 rounded-lg shadow-sm hover:bg-blue-700 focus:ring-4 focus:outline-none focus:ring-blue-300 transition-colors cursor-pointer">
-                                Додати до кошика
-                            </button>
-                        </form>
-                    {% else %}
-                        <button type="button" 
-                                disabled 
-                                class="w-full px-5 py-2.5 text-sm font-semibold text-gray-400 bg-gray-100 border border-gray-200 rounded-lg cursor-not-allowed">
-                            Недоступна для замовлення
-                        </button>
-                    {% endif %}
-                </div>
-
-            </div>
-
-        </div>
-
-        <!-- Блок відгуків -->
-        <div class="bg-white border border-gray-200 rounded-2xl p-8 shadow-sm">
-            <h2 class="text-2xl font-bold text-gray-900 mb-6">Відгуки покупців</h2>
-
-            {% if reviews %}
-                <div class="space-y-6">
-                    {% for review in reviews %}
-                        <div class="pb-6 border-b border-gray-100 last:border-none last:pb-0">
-                            <div class="flex items-center justify-between mb-2">
-                                <span class="font-semibold text-gray-900">
-                                    {{ review.user.username|default:"Анонімний користувач" }}
-                                </span>
-                                {% if review.created_at %}
-                                    <span class="text-xs text-gray-400">{{ review.created_at|date:"d.m.Y H:i" }}</span>
-                                {% endif %}
-                            </div>
-
-                            <!-- Якщо у вашій моделі відгуків є рейтинг (наприклад, review.rating), ви можете вивести його тут -->
-                            {% if review.rate %}
-                                <div class="flex items-center mb-2 text-yellow-400 text-sm">
-                                    <span>Оцінка: {{ review.rate }}/5</span>
-                                </div>
-                            {% endif %}
-
-                            <p class="text-gray-600 text-sm leading-relaxed">{{ review.text }}</p>
-                        </div>
-                    {% endfor %}
-                </div>
+    <!-- Картка страви -->
+    <div class="dish-card">
+        <div class="dish-media">
+            {% if dish.photo %}
+                <img src="{{ dish.photo.url }}" alt="{{ dish.name }}" class="dish-photo">
             {% else %}
-                <p class="text-gray-500 text-sm">Ця страва поки не має відгуків. Будьте першими, хто її оцінить!</p>
+                <div class="dish-photo-placeholder">
+                    <span>{{ dish.name|first|upper }}</span>
+                </div>
             {% endif %}
         </div>
 
+        <div class="dish-info">
+            <div class="dish-meta-top">
+                {% if dish.category %}
+                    <span class="dish-category">{{ dish.category.name }}</span>
+                {% endif %}
+
+                {% if dish.is_available %}
+                    <span class="badge-available">В наявності</span>
+                {% else %}
+                    <span class="badge-unavailable">Немає в наявності</span>
+                {% endif %}
+            </div>
+
+            <h1 class="dish-title">{{ dish.name }}</h1>
+
+            <div class="dish-price-weight">
+                <span class="dish-price">{{ dish.price }} ₴</span>
+                <span class="dish-weight">{{ dish.weight }} г</span>
+            </div>
+
+            <p class="dish-description">
+                {{ dish.description|linebreaksbr }}
+            </p>
+
+            {% if dish.ingredients_list %}
+                <div class="dish-ingredients">
+                    <h3>Інгредієнти:</h3>
+                    <div class="ingredients-tags">
+                        {% for ingredient in dish.ingredients_list %}
+                            <span class="ingredient-tag">{{ ingredient }}</span>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endif %}
+
+            <div class="dish-actions">
+                <a href="{% url 'home' %}" class="btn btn-secondary">← Назад до меню</a>
+                <a href="{% url 'cart_add' dish.pk %}" class="btn btn-primary">Додати до кошика</a>
+            </div>
+        </div>
     </div>
 
-</body>
-</html>
+    <!-- Блок відгуків -->
+    <div class="reviews-section" id="review-form">
+        <h2 class="section-title">Відгуки про страву</h2>
+
+        <!-- Форма додавання відгуку -->
+        {% if user.is_authenticated %}
+            {% if already_reviewed %}
+                <div class="info-box">
+                    Ви вже залишили відгук на цю страву. Дякуємо за оцінку!
+                </div>
+            {% else %}
+                <form method="post" action="{% url 'add_review' dish.pk %}" class="review-form">
+                    {% csrf_token %}
+
+                    <div class="form-group">
+                        <label for="id_rate">Оцінка (1–5):</label>
+                        {% if form.rate %}
+                            {{ form.rate }}
+                        {% else %}
+                            <select name="rate" id="id_rate" class="form-control" required>
+                                <option value="">Оберіть оцінку</option>
+                                <option value="5">5 — Чудово</option>
+                                <option value="4">4 — Добре</option>
+                                <option value="3">3 — Нормально</option>
+                                <option value="2">2 — Слабко</option>
+                                <option value="1">1 — Жахливо</option>
+                            </select>
+                        {% endif %}
+                        {% if form.rate.errors %}
+                            <div class="field-error">{{ form.rate.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="form-group">
+                        <label for="id_text">Ваш відгук:</label>
+                        {% if form.text %}
+                            {{ form.text }}
+                        {% else %}
+                            <textarea name="text" id="id_text" rows="4" class="form-control" placeholder="Поділіться враженнями про страву..." required></textarea>
+                        {% endif %}
+                        {% if form.text.errors %}
+                            <div class="field-error">{{ form.text.errors }}</div>
+                        {% endif %}
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">Надіслати відгук</button>
+                </form>
+            {% endif %}
+        {% else %}
+            <div class="info-box">
+                Щоб залишити відгук, будь ласка, <a href="{% url 'login' %}?next={{ request.path }}">увійдіть в акаунт</a>.
+            </div>
+        {% endif %}
+
+        <!-- Список схвалених відгуків -->
+        <div class="reviews-list">
+            {% if approved_reviews %}
+                {% for review in approved_reviews %}
+                    <div class="review-card">
+                        <div class="review-header">
+                            <div class="review-author">
+                                <strong>{{ review.user.name }} {{ review.user.secondname }}</strong>
+                                <span class="review-date">{{ review.created_at|date:"d.m.Y H:i" }}</span>
+                            </div>
+                            <div class="review-rate">
+                                ★ {{ review.rate }} / 5
+                            </div>
+                        </div>
+                        <p class="review-text">{{ review.text|linebreaksbr }}</p>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <p class="empty-reviews">Схвалених відгуків поки немає. Будьте першим!</p>
+            {% endif %}
+        </div>
+    </div>
+
+</div>
+
+<style>
+    .detail-container {
+        max-width: 860px;
+        margin: 0 auto;
+        padding: 32px 20px;
+    }
+
+    .messages-list {
+        margin-bottom: 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .alert {
+        padding: 12px 16px;
+        border-radius: 10px;
+        font-size: 0.95rem;
+        border: 1px solid transparent;
+    }
+
+    .alert-success {
+        background-color: #ecfdf5;
+        color: #065f46;
+        border-color: #a7f3d0;
+    }
+
+    .alert-error, .alert-danger {
+        background-color: #fef2f2;
+        color: #991b1b;
+        border-color: #fecaca;
+    }
+
+    .alert-info {
+        background-color: #eff6ff;
+        color: #1e40af;
+        border-color: #bfdbfe;
+    }
+
+    .dish-card {
+        display: grid;
+        grid-template-columns: 1fr 1.2fr;
+        gap: 28px;
+        background: #ffffff;
+        border-radius: 16px;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+        padding: 24px;
+        margin-bottom: 32px;
+    }
+
+    @media (max-width: 720px) {
+        .dish-card {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    .dish-photo {
+        width: 100%;
+        height: 300px;
+        object-fit: cover;
+        border-radius: 12px;
+    }
+
+    .dish-photo-placeholder {
+        width: 100%;
+        height: 300px;
+        border-radius: 12px;
+        background: #e5e7eb;
+        color: #4b5563;
+        font-size: 64px;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .dish-meta-top {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 10px;
+        flex-wrap: wrap;
+    }
+
+    .dish-category {
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: #3b82f6;
+        background: #eff6ff;
+        padding: 4px 10px;
+        border-radius: 999px;
+    }
+
+    .badge-available {
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: #166534;
+        background: #dcfce7;
+        padding: 4px 10px;
+        border-radius: 999px;
+    }
+
+    .badge-unavailable {
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: #991b1b;
+        background: #fee2e2;
+        padding: 4px 10px;
+        border-radius: 999px;
+    }
+
+    .dish-title {
+        margin: 0 0 12px;
+        font-size: 1.75rem;
+        color: #111827;
+    }
+
+    .dish-price-weight {
+        display: flex;
+        align-items: baseline;
+        gap: 16px;
+        margin-bottom: 16px;
+    }
+
+    .dish-price {
+        font-size: 1.4rem;
+        font-weight: 700;
+        color: #1f2937;
+    }
+
+    .dish-weight {
+        font-size: 0.95rem;
+        color: #6b7280;
+    }
+
+    .dish-description {
+        color: #374151;
+        line-height: 1.6;
+        margin: 0 0 18px;
+    }
+
+    .dish-ingredients h3 {
+        margin: 0 0 8px;
+        font-size: 0.95rem;
+        color: #1f2937;
+    }
+
+    .ingredients-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-bottom: 20px;
+    }
+
+    .ingredient-tag {
+        font-size: 0.85rem;
+        background: #f3f4f6;
+        color: #374151;
+        padding: 4px 10px;
+        border-radius: 8px;
+    }
+
+    .dish-actions {
+        display: flex;
+        gap: 12px;
+        margin-top: 12px;
+    }
+
+    .reviews-section {
+        background: #ffffff;
+        border-radius: 16px;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+        padding: 28px;
+    }
+
+    .section-title {
+        margin: 0 0 20px;
+        font-size: 1.35rem;
+        color: #111827;
+    }
+
+    .info-box {
+        background: #f9fafb;
+        border: 1px solid #e5e7eb;
+        border-radius: 10px;
+        padding: 14px 16px;
+        color: #374151;
+        margin-bottom: 24px;
+    }
+
+    .review-form {
+        background: #f9fafb;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 28px;
+    }
+
+    .form-group {
+        margin-bottom: 16px;
+    }
+
+    .form-group label {
+        display: block;
+        font-weight: 600;
+        color: #374151;
+        margin-bottom: 6px;
+        font-size: 0.9rem;
+    }
+
+    .form-group select,
+    .form-group textarea,
+    .form-group input,
+    .form-control {
+        width: 100%;
+        box-sizing: border-box;
+        padding: 10px 12px;
+        border: 1px solid #d1d5db;
+        border-radius: 8px;
+        font-size: 0.95rem;
+        background: #ffffff;
+        color: #111827;
+    }
+
+    .field-error {
+        color: #b91c1c;
+        font-size: 0.85rem;
+        margin-top: 4px;
+    }
+
+    .btn {
+        display: inline-block;
+        padding: 10px 20px;
+        border-radius: 8px;
+        text-decoration: none;
+        font-weight: 500;
+        font-size: 0.9rem;
+        border: none;
+        cursor: pointer;
+        transition: background-color 0.2s;
+    }
+
+    .btn-primary {
+        background-color: #3b82f6;
+        color: #ffffff;
+    }
+
+    .btn-primary:hover {
+        background-color: #2563eb;
+    }
+
+    .btn-secondary {
+        background-color: #f3f4f6;
+        color: #374151;
+    }
+
+    .btn-secondary:hover {
+        background-color: #e5e7eb;
+    }
+
+    .reviews-list {
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+    }
+
+    .review-card {
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        padding: 16px;
+        background: #ffffff;
+    }
+
+    .review-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 8px;
+        gap: 12px;
+    }
+
+    .review-date {
+        color: #6b7280;
+        font-size: 0.85rem;
+        margin-left: 8px;
+    }
+
+    .review-rate {
+        font-weight: 700;
+        color: #d97706;
+        background: #fef3c7;
+        padding: 4px 10px;
+        border-radius: 999px;
+        font-size: 0.85rem;
+    }
+
+    .review-text {
+        margin: 0;
+        color: #374151;
+        line-height: 1.5;
+    }
+
+    .empty-reviews {
+        color: #6b7280;
+        margin: 0;
+    }
+</style>
+{% endblock %}

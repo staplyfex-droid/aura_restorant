@@ -1,5 +1,8 @@
+import django
 from django.db import models
 from django.contrib.auth.models import User
+from django.core.validators import MinValueValidator, MaxValueValidator
+
 
 class Accounts(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, verbose_name="Користувач", related_name="user_accounts")
@@ -49,6 +52,13 @@ class Review(models.Model):
     user = models.ForeignKey(Accounts, on_delete=models.CASCADE, verbose_name='користувач')
     item = models.ForeignKey(Menu, on_delete=models.CASCADE, related_name='reviews', verbose_name='страва')
     text = models.TextField(verbose_name='відгук')
-    rate = models.PositiveSmallIntegerField(verbose_name='оцінка 1-5')
+    rate = models.PositiveSmallIntegerField(verbose_name='оцінка 1-5', validators = [MinValueValidator(1), MaxValueValidator(5)])
     is_approwed = models.BooleanField(default=False, verbose_name='схвалено модератором')
-    
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='дата')
+    class Meta:
+        ordering=['-created_at']
+        verbose_name = 'Відгук'
+        verbose_name_plural = 'Відгуки'
+        constraints = [
+            models.UniqueConstraint(fields=['user', 'item'], name = 'unique_review_per_user_item')
+        ]
