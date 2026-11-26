@@ -36,7 +36,7 @@ class Cart:
                 'price': dish.price,
                 'subtotal': dish.price * qty
             }
-        def __len__(self):
-            return sum(self.cart.values())
-        def total_price(self):
-            return sum((item['subtotal']for item in self),Decimal('0'))
+    def __len__(self):
+        return sum(self.cart.values())
+    def total_price(self):
+        return sum((item['subtotal']for item in self),Decimal('0'))

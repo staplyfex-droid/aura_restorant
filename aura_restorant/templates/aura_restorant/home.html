@@ -18,7 +18,7 @@
         border: 1px solid #e2e8f0;
         border-radius: 16px;
         padding: 2.5rem 2rem;
-        max-width: 500px;
+        max-width: 520px;
         width: 100%;
         text-align: center;
         box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
@@ -40,6 +40,7 @@
 
     .btn-group {
         display: flex;
+        flex-wrap: wrap;
         gap: 0.75rem;
         justify-content: center;
         align-items: center;
@@ -89,7 +90,8 @@
             <p class="home-subtitle">Вітаємо, <strong>{{ user.username }}</strong>! Раді бачити вас знову.</p>
 
             <div class="btn-group">
-                <a href="{% url 'profile' %}" class="btn-light-main">Мій профіль</a>
+                <a href="{% url 'menu_list' %}" class="btn-light-main">Меню</a>
+                <a href="{% url 'profile' %}" class="btn-light-secondary">Мій профіль</a>
 
                 <form method="post" action="{% url 'logout' %}" style="margin: 0;">
                     {% csrf_token %}
@@ -97,10 +99,11 @@
                 </form>
             </div>
         {% else %}
-            <p class="home-subtitle">Ласкаво просимо! Увійдіть або зареєструйтеся для продовження.</p>
+            <p class="home-subtitle">Ласкаво просимо! Переглядайте меню або увійдіть для оформлення замовлення.</p>
 
             <div class="btn-group">
-                <a href="{% url 'login' %}" class="btn-light-main">Увійти</a>
+                <a href="{% url 'menu_list' %}" class="btn-light-main">Меню</a>
+                <a href="{% url 'login' %}" class="btn-light-secondary">Увійти</a>
                 <a href="{% url 'register' %}" class="btn-light-secondary">Реєстрація</a>
             </div>
         {% endif %}
